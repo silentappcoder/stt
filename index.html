@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <button onclick="startRecording()">Iniciar Gravação</button>
+    <button onclick="stopRecording()" disabled>Parar Gravação</button>
+    <button onclick="playAudio()" disabled>Reproduzir Áudio</button>
+
+    <audio id="audio"></audio>
+
+    <script>
+        let chunks = [];
+        let mediaRecorder;
+
+        async function startRecording() {
+            let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            document.querySelector('[onclick="stopRecording()"]').disabled = false;
+            document.querySelector('[onclick="startRecording()"]').disabled = true;
+
+            mediaRecorder.ondataavailable = function(e) {
+                chunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = function(e) {
+                const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+                chunks = [];
+
+                if (blob.size > 100) { // Verifica se o blob é grande o suficiente
+                    const audioURL = URL.createObjectURL(blob);
+                    document.getElementById('audio').src = audioURL;
+                    sendToServer(blob); // envia o áudio para o servidor
+                } else {
+                    console.error('Nenhum áudio foi capturado.');
+                }
+            };
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+
+            document.querySelector('[onclick="stopRecording()"]').disabled = true;
+            document.querySelector('[onclick="startRecording()"]').disabled = false;
+            document.querySelector('[onclick="playAudio()"]').disabled = false;
+        }
+
+        function playAudio() {
+            let audio = document.getElementById('audio');
+            audio.play();
+        }
+
+        function sendToServer(blob) {
+            var data = new FormData();
+            data.append('audio', blob);
+            console.log(data+'DataAudioR');
+
+            fetch('http://localhost:3000/transcribe', {
+                method: 'POST',
+                body: data
+            }).then(response => response.text())
+            .then(data => {
+                // console.log('Transcription: ', data);
+            }).catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
