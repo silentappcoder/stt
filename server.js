@@ -41,7 +41,6 @@ app.post('/transcribe', upload.single('audio'), async (req, res) => {
   }
   try {
     const monoBuffer = await convertToMono(req.file.buffer);
-    console.log(monoBuffer+'monobuffer');
     const client = new speech.SpeechClient();
     const audioBytes = monoBuffer.toString('base64');
 
@@ -64,7 +63,6 @@ app.post('/transcribe', upload.single('audio'), async (req, res) => {
       .map(result => result.alternatives[0].transcript)
       .join('\n');
     res.send(transcription);
-    // console.log(JSON.stringify(response.results));
   } catch (err) {
     console.error('ERROR:', err);
     res.status(500).send(err);
@@ -72,5 +70,5 @@ app.post('/transcribe', upload.single('audio'), async (req, res) => {
 });
 
 app.listen(3000, () => {
-  console.log('Server started on port 3000');
+  console.log('Servidor rodando 3000');
 });
