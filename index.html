@@ -55,7 +55,7 @@
             data.append('audio', blob);
             console.log(data+'DataAudioR');
 
-            fetch('http://localhost:3000/transcribe', {
+            fetch('https://stt-go2dev.onrender.com/transcribe', {
                 method: 'POST',
                 body: data
             }).then(response => response.text())
